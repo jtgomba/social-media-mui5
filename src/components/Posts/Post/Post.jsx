@@ -16,9 +16,12 @@ import {
   ThumbUpAltOutlined,
 } from "@mui/icons-material/";
 
-import about4 from "../../../assets/about04.png";
+import { useNavigate } from "react-router-dom";
 
 const Post = ({ post }) => {
+  let navigate = useNavigate();
+
+  const openPost = () => navigate(`/posts/${post._id}`, { replace: true });
   return (
     <Card
       sx={{
@@ -32,12 +35,26 @@ const Post = ({ post }) => {
       raised
       elevation={6}
     >
+      <Box
+        sx={{
+          position: "absolute",
+          top: "10px",
+          right: "10px",
+          color: "white",
+          zIndex: "5",
+        }}
+      >
+        <Button style={{ color: "white" }} size="small">
+          <MoreHoriz fontSize="medium" />
+        </Button>
+      </Box>
       <ButtonBase
         component="span"
         sx={{
           display: "block",
           textAlign: "initial",
         }}
+        onClick={openPost}
       >
         <CardMedia
           sx={{
@@ -59,19 +76,6 @@ const Post = ({ post }) => {
         >
           <Typography variant="h6">{post.name}</Typography>
           <Typography variant="body2">{post.createdAt}</Typography>
-        </Box>
-
-        <Box
-          sx={{
-            position: "absolute",
-            top: "20px",
-            right: "20px",
-            color: "white",
-          }}
-        >
-          <Button style={{ color: "white" }} size="small">
-            <MoreHoriz fontSize="medium" />
-          </Button>
         </Box>
         <Box
           sx={{
