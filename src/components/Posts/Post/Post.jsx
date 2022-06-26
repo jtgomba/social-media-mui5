@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React from "react";
 import {
   Card,
   CardActions,
@@ -21,7 +21,7 @@ import { useNavigate } from "react-router-dom";
 const Post = ({ post }) => {
   let navigate = useNavigate();
 
-  const openPost = () => navigate(`/posts/${post._id}`, { replace: true });
+  const openPost = () => navigate(`/posts/${post.id}`, { replace: true });
   return (
     <Card
       sx={{
@@ -63,7 +63,7 @@ const Post = ({ post }) => {
             backgroundColor: "rgba(0, 0, 0, 0.5)",
             backgroundBlendMode: "darken",
           }}
-          image={post.image}
+          image={post.imageLocation}
           title={post.title}
         />
         <Box
@@ -75,7 +75,9 @@ const Post = ({ post }) => {
           }}
         >
           <Typography variant="h6">{post.name}</Typography>
-          <Typography variant="body2">{post.createdAt}</Typography>
+          <Typography variant="body2">
+            {new Date(post.createdAt?.seconds * 1000).toDateString()}
+          </Typography>
         </Box>
         <Box
           sx={{

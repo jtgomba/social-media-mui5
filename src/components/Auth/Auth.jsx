@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   Avatar,
   Button,
@@ -27,7 +27,7 @@ const initialState = {
 
 const Auth = () => {
   let navigate = useNavigate();
-  const { login, signup } = useAuth();
+  const { login, signup, user } = useAuth();
 
   const [showPassword, setShowPassword] = useState(false);
   const [isSignup, setIsSignup] = useState(false);
@@ -47,14 +47,17 @@ const Auth = () => {
       });
     } else {
       signup({
-        name: `${formData.firstName} ${formData.lastName}`,
         email: formData.email,
         password: formData.password,
-        id: formData.email,
       });
     }
-    navigate("/", { replace: true });
   };
+
+  useEffect(() => {
+    if (user.uid) {
+      navigate("/", { replace: true });
+    }
+  }, [navigate, user]);
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });

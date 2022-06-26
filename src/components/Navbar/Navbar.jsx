@@ -9,7 +9,7 @@ import {
 } from "@mui/material";
 import { deepPurple } from "@mui/material/colors";
 import { createTheme } from "@mui/material/styles";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useLocation } from "react-router-dom";
 
 import memoriesLogo from "../../assets/memories-Logo.png";
 import memoriesText from "../../assets/memories-Text.png";
@@ -19,12 +19,26 @@ const theme = createTheme();
 
 const Navbar = () => {
   const { user, logout } = useAuth();
+  const location = useLocation();
+
   let navigate = useNavigate();
 
   const handleLogout = () => {
     logout();
     navigate("/", { replace: true });
   };
+
+  /* useEffect(() => {
+    const token = user?.token;
+
+    if (token) {
+      const decodedToken = decode(token);
+      if (decodedToken.exp * 1000 < new Date().getTime()) logout();
+    }
+
+    setUser(JSON.parse(localStorage.getItem("profile")));
+  }, [location, logout, user?.token]);
+ */
 
   return (
     <AppBar
@@ -72,7 +86,7 @@ const Navbar = () => {
           width: { xs: "auto", md: "400px" },
         }}
       >
-        {user.name ? (
+        {user.uid ? (
           <Box
             sx={{
               display: "flex",
@@ -82,13 +96,13 @@ const Navbar = () => {
             }}
           >
             <Avatar
-              alt={user.name}
+              alt={user?.displayName}
               src={user?.imageUrl}
               sx={{
                 backgroundColor: deepPurple[500],
               }}
             >
-              {user?.name.charAt(0)}
+              {user.displayName?.charAt(0)}
             </Avatar>
             <Typography
               variant="h6"

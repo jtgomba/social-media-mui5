@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   Grow,
   Container,
@@ -10,6 +10,7 @@ import {
   Box,
   Pagination,
 } from "@mui/material";
+import { location } from "react-router-dom";
 
 import { Form, Posts } from "../components";
 

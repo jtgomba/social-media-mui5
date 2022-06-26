@@ -1,21 +1,19 @@
 import React, { useState } from "react";
 import { Paper, Typography, Divider, Box, Stack } from "@mui/material";
-import { Link } from "react-router-dom";
+import { Link, useParams } from "react-router-dom";
+import CircularProgress from "@mui/material/CircularProgress";
 
-import about4 from "../assets/about01.png";
-
-const fakePost = {
-  _id: "id",
-  name: "Demo User",
-  tags: ["tag1", "tag2", "tag3"],
-  title: "Title",
-  message: "Message",
-  image: about4,
-  createdAt: "Yesterday",
-};
+import usePost from "../context/PostContext";
 
 const PostDetails = () => {
-  const [post, setPost] = useState(fakePost);
+  let { postId } = useParams();
+  const { getPost, post } = usePost();
+
+  if (!post.title) {
+    getPost(postId);
+    return <CircularProgress />;
+  }
+
   return (
     <Paper sx={{ padding: "20px", borderRadius: "15px" }} elevation={6}>
       <Stack direction={{ xs: "column", md: "row" }} spacing={1}>
@@ -48,7 +46,7 @@ const PostDetails = () => {
           <Typography gutterBottom variant="body1" component="p">
             {post.message}
           </Typography>
-          <Typography variant="h6">
+          <Typography variant="h6" gutterBottom>
             Created by:
             <Link
               to={`/creator/${post.name}`}
@@ -57,13 +55,16 @@ const PostDetails = () => {
               {` ${post.name}`}
             </Link>
           </Typography>
+          <Typography variant="body1">
+            {new Date(post.createdAt?.seconds * 1000).toDateString()}
+          </Typography>
           <Divider style={{ margin: "20px 0" }} />
           Comment Section
           <Divider style={{ margin: "20px 0" }} />
         </Box>
         <Box
           component="img"
-          src={post.image}
+          src={post.imageLocation}
           alt={post.title}
           sx={{
             borderRadius: "20px",
@@ -74,13 +75,12 @@ const PostDetails = () => {
           }}
         />
       </Stack>
-      {/* recommended posts area */}
       <Box sx={{ borderRadius: "20px", margin: "10px", flex: 1 }}>
         <Typography gutterBottom variant="h5">
           You might also like:
         </Typography>
         <Divider />
-        <Stack
+        {/*         <Stack
           direction={{ xs: "column", sm: "row" }}
           spacing={{ xs: 1, sm: 2, md: 4 }}
           sx={{
@@ -109,7 +109,7 @@ const PostDetails = () => {
               />
             </Stack>
           </Paper>
-        </Stack>
+        </Stack> */}
       </Box>
     </Paper>
   );
