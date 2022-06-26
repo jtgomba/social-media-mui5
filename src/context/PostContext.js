@@ -20,8 +20,6 @@ import {
   LIKE,
   CREATE,
   FETCH_BY_SEARCH,
-  START_LOADING,
-  END_LOADING,
   COMMENT,
   FETCH_BY_CREATOR,
 } from "./actionTypes";
