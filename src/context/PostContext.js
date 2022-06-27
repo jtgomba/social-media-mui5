@@ -14,9 +14,15 @@ import {
   addDoc,
   doc,
   serverTimestamp,
-  onSnapshot,
+  deleteDoc,
 } from "firebase/firestore";
-import { getStorage, ref, getDownloadURL, uploadBytes } from "firebase/storage";
+import {
+  getStorage,
+  ref,
+  getDownloadURL,
+  uploadBytes,
+  deleteObject,
+} from "firebase/storage";
 import firebaseApp from "../utils/firebaseConfig";
 
 import postReducer, { initialState } from "./postReducer";
@@ -42,7 +48,8 @@ export const PostProvider = ({ children }) => {
   const [loading, setLoading] = useState(true);
 
   const createPost = async (post) => {
-    const { creatorId, imageFile } = post;
+    setLoading(true);
+    const { title, message, tags, creatorId, imageFile, author } = post;
     const imageLocation = `postImages/${creatorId}/${imageFile.name}`;
 
     const storageSpace = ref(storage, imageLocation);
@@ -52,7 +59,11 @@ export const PostProvider = ({ children }) => {
     const imageUrl = await getImageUrl(imageLocation);
 
     const newPost = {
-      ...post,
+      title: title,
+      message: message,
+      tags: tags,
+      author: author,
+      creatorId: creatorId,
       imageUrl: imageUrl,
       imageStorageLoc: imageLocation,
       createdAt: serverTimestamp(),
@@ -63,7 +74,7 @@ export const PostProvider = ({ children }) => {
     })
       .then(
         dispatch({
-          type: UPDATE,
+          type: CREATE,
           payload: { ...newPost },
         })
       )
@@ -102,7 +113,15 @@ export const PostProvider = ({ children }) => {
   };
 
   //make sure to send storage bucket delete here too
-  const deletePost = async (post) => {};
+  const deletePost = async (post) => {
+    setLoading(true);
+    const deleteRef = ref(storage, post.imageStorageLoc);
+    await deleteDoc(doc(db, "posts", post.id));
+    await deleteObject(deleteRef).catch((error) => {
+      console.log(error);
+    });
+    getPosts();
+  };
 
   const getPosts = async () => {
     setLoading(true);
@@ -158,6 +177,7 @@ export const PostProvider = ({ children }) => {
     getPost,
     getImageUrl,
     createPost,
+    deletePost,
     loading,
     setLoading,
     posts: state.posts,

@@ -18,10 +18,16 @@ import {
 import { useNavigate } from "react-router-dom";
 
 import useAuth from "../../../context/AuthContext";
+import usePost from "../../../context/PostContext";
 
 const Post = ({ post }) => {
   let navigate = useNavigate();
   const { user } = useAuth();
+  const { deletePost } = usePost();
+
+  const handleDelete = () => {
+    deletePost(post);
+  };
 
   const openPost = () => navigate(`/posts/${post.id}`, { replace: true });
   return (
@@ -121,7 +127,7 @@ const Post = ({ post }) => {
           {/* <Likes /> */}
         </Button>
         {post.creatorId === user.uid ? (
-          <Button size="small" color="secondary">
+          <Button size="small" color="secondary" onClick={handleDelete}>
             <Delete fontSize="small" /> Delete
           </Button>
         ) : (

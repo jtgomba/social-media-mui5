@@ -24,7 +24,6 @@ const AuthContext = createContext(initialState);
 
 export const AuthProvider = ({ children }) => {
   const [state, dispatch] = useReducer(userReducer, initialState);
-  const [authLoading, setAuthLoading] = useState();
   const auth = getAuth(firebaseApp);
 
   const signup = async (newUser) => {
@@ -76,7 +75,6 @@ export const AuthProvider = ({ children }) => {
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
       if (currentUser) {
-        console.log("this shoulnd not work");
         dispatch({
           type: AUTH,
           payload: {

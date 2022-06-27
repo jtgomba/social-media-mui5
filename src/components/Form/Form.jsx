@@ -26,6 +26,7 @@ const Form = () => {
     tags: "",
     image: "",
     creatorId: user.uid,
+    author: user.displayName,
     imageFile: null,
   });
 
@@ -70,7 +71,8 @@ const Form = () => {
           padding: theme.spacing(2),
           borderRadius: 1,
         }}
-        elevation={6}>
+        elevation={6}
+      >
         <Typography variant="h6" align="center">
           Please Sign In to create your own memories and like others memories.
         </Typography>
@@ -84,11 +86,13 @@ const Form = () => {
         padding: theme.spacing(2),
         borderRadius: 1,
       }}
-      elevation={6}>
+      elevation={6}
+    >
       <form autoComplete="off" noValidate onSubmit={handleSubmit}>
         <Stack
           spacing={2}
-          sx={{ alignItems: "center", justifyContent: "center" }}>
+          sx={{ alignItems: "center", justifyContent: "center" }}
+        >
           <Typography variant="h6">Creating a Memory</Typography>
           <TextField
             name="title"
@@ -138,7 +142,8 @@ const Form = () => {
             color="primary"
             size="large"
             type="submit"
-            fullWidth>
+            fullWidth
+          >
             Submit
           </Button>
           <Button
@@ -146,7 +151,8 @@ const Form = () => {
             color="secondary"
             size="small"
             fullWidth
-            onClick={clear}>
+            onClick={clear}
+          >
             Clear
           </Button>
         </Stack>
