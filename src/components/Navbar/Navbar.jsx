@@ -112,7 +112,7 @@ const Navbar = () => {
                 textAlign: "center",
               }}
             >
-              {user.name}
+              {user?.displayName}
             </Typography>
             <Button
               variant="contained"

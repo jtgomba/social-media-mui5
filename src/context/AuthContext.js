@@ -1,4 +1,10 @@
-import { createContext, useReducer, useContext, useEffect } from "react";
+import {
+  createContext,
+  useReducer,
+  useContext,
+  useEffect,
+  useState,
+} from "react";
 import {
   getAuth,
   createUserWithEmailAndPassword,
@@ -7,6 +13,7 @@ import {
   onAuthStateChanged,
   setPersistence,
   browserLocalPersistence,
+  updateProfile,
 } from "firebase/auth";
 import firebaseApp from "../utils/firebaseConfig";
 
@@ -14,19 +21,26 @@ import userReducer, { initialState } from "./authReducer";
 import { AUTH, LOGOUT } from "./actionTypes";
 
 const AuthContext = createContext(initialState);
-const auth = getAuth(firebaseApp);
 
 export const AuthProvider = ({ children }) => {
   const [state, dispatch] = useReducer(userReducer, initialState);
+  const [authLoading, setAuthLoading] = useState();
+  const auth = getAuth(firebaseApp);
 
-  const signup = (newUser) => {
-    createUserWithEmailAndPassword(auth, newUser.email, newUser.password).catch(
-      (error) => {
-        const errorCode = error.code;
-        const errorMessage = error.message;
-        console.log(errorCode, errorMessage);
-      }
-    );
+  const signup = async (newUser) => {
+    await createUserWithEmailAndPassword(
+      auth,
+      newUser.email,
+      newUser.password
+    ).catch((error) => {
+      const errorCode = error.code;
+      const errorMessage = error.message;
+      console.log(errorCode, errorMessage);
+    });
+    await updateProfile(auth.currentUser, {
+      displayName: newUser.displayName,
+    });
+    dispatch({ type: AUTH, payload: { ...auth.currentUser } });
   };
 
   const login = (user) => {
@@ -62,6 +76,7 @@ export const AuthProvider = ({ children }) => {
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
       if (currentUser) {
+        console.log("this shoulnd not work");
         dispatch({
           type: AUTH,
           payload: {

@@ -6,13 +6,19 @@ import usePost from "../../context/PostContext";
 import CircularProgress from "@mui/material/CircularProgress";
 
 const Posts = () => {
-  const { getPosts, posts } = usePost();
+  const { getPosts, posts, loading } = usePost();
 
   useEffect(() => {
     getPosts();
   }, []);
 
-  return (
+  if (!posts.length > 0 && !loading) {
+    return "No posts";
+  }
+
+  return loading ? (
+    <CircularProgress />
+  ) : (
     <Grid
       sx={{
         display: "flex",

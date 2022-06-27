@@ -42,7 +42,7 @@ export const PostProvider = ({ children }) => {
   const [loading, setLoading] = useState(true);
 
   const createPost = async (post) => {
-    const { title, message, tags, creatorId, imageFile } = post;
+    const { creatorId, imageFile } = post;
     const imageLocation = `postImages/${creatorId}/${imageFile.name}`;
 
     const storageSpace = ref(storage, imageLocation);
@@ -52,10 +52,7 @@ export const PostProvider = ({ children }) => {
     const imageUrl = await getImageUrl(imageLocation);
 
     const newPost = {
-      title: title,
-      message: message,
-      tags: tags,
-      creatorId: creatorId,
+      ...post,
       imageUrl: imageUrl,
       imageStorageLoc: imageLocation,
       createdAt: serverTimestamp(),
@@ -104,10 +101,16 @@ export const PostProvider = ({ children }) => {
       });
   };
 
+  //make sure to send storage bucket delete here too
+  const deletePost = async (post) => {};
+
   const getPosts = async () => {
+    setLoading(true);
+
     const posts = [];
     const querySnapshot = await getDocs(collection(db, "posts")).catch(
       (error) => {
+        setLoading(false);
         const errorCode = error.code;
         const errorMessage = error.message;
         console.log(errorCode, errorMessage);
@@ -122,6 +125,7 @@ export const PostProvider = ({ children }) => {
       type: FETCH_ALL,
       payload: [...posts],
     });
+    setLoading(false);
   };
 
   const getPost = async (id) => {

@@ -49,6 +49,7 @@ const Auth = () => {
       signup({
         email: formData.email,
         password: formData.password,
+        displayName: `${formData.firstName} ${formData.lastName}`,
       });
     }
   };
