@@ -7,6 +7,7 @@ const DELETE = "DELETE";
 const LIKE = "LIKE";
 const COMMENT = "COMMENT";
 const FETCH_BY_CREATOR = "FETCH_BY_CREATOR";
+const CLEAR = "CLEAR";
 
 const START_LOADING = "START_LOADING";
 const END_LOADING = "END_LOADING";
@@ -28,4 +29,5 @@ export {
   FETCH_BY_CREATOR,
   START_LOADING,
   END_LOADING,
+  CLEAR,
 };

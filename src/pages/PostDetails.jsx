@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect } from "react";
 import { Paper, Typography, Divider, Box, Stack } from "@mui/material";
 import { Link, useParams } from "react-router-dom";
 import CircularProgress from "@mui/material/CircularProgress";
@@ -7,14 +7,19 @@ import usePost from "../context/PostContext";
 
 const PostDetails = () => {
   let { postId } = useParams();
-  const { getPost, post } = usePost();
+  const { getPost, post, loading } = usePost();
 
-  if (!post.title) {
+  useEffect(() => {
     getPost(postId);
-    return <CircularProgress />;
+  }, []);
+
+  if (!post.title.length > 0 && !loading) {
+    return "No posts";
   }
 
-  return (
+  return loading ? (
+    <CircularProgress />
+  ) : (
     <Paper sx={{ padding: "20px", borderRadius: "15px" }} elevation={6}>
       <Stack direction={{ xs: "column", md: "row" }} spacing={1}>
         <Box
@@ -49,10 +54,10 @@ const PostDetails = () => {
           <Typography variant="h6" gutterBottom>
             Created by:
             <Link
-              to={`/creator/${post.name}`}
+              to={`/creator/${post.author}`}
               style={{ textDecoration: "none", color: "#3f51b5" }}
             >
-              {` ${post.name}`}
+              {` ${post.author}`}
             </Link>
           </Typography>
           <Typography variant="body1">
@@ -64,7 +69,7 @@ const PostDetails = () => {
         </Box>
         <Box
           component="img"
-          src={post.imageLocation}
+          src={post.imageUrl}
           alt={post.title}
           sx={{
             borderRadius: "20px",
@@ -93,7 +98,7 @@ const PostDetails = () => {
                 {post.title}
               </Typography>
               <Typography gutterBottom variant="subtitle2">
-                {post.name}
+                {post.autor}
               </Typography>
               <Typography gutterBottom variant="subtitle2">
                 {post.message}

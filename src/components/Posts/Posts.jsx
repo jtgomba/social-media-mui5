@@ -9,8 +9,7 @@ const Posts = () => {
   const { getPosts, posts } = usePost();
 
   useEffect(() => {
-    /*     getPosts();
-     */
+    getPosts();
   }, []);
 
   return (
@@ -21,7 +20,8 @@ const Posts = () => {
       }}
       container
       alignItems="stretch"
-      spacing={3}>
+      spacing={3}
+    >
       {posts.length === 0 ? (
         <Box sx={{ position: "absolute", top: "50vh", left: "50vw" }}>
           <CircularProgress />

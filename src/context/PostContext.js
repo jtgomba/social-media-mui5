@@ -1,4 +1,10 @@
-import { createContext, useReducer, useContext } from "react";
+import {
+  createContext,
+  useReducer,
+  useContext,
+  useEffect,
+  useState,
+} from "react";
 import {
   getFirestore,
   collection,
@@ -8,6 +14,7 @@ import {
   addDoc,
   doc,
   serverTimestamp,
+  onSnapshot,
 } from "firebase/firestore";
 import { getStorage, ref, getDownloadURL, uploadBytes } from "firebase/storage";
 import firebaseApp from "../utils/firebaseConfig";
@@ -23,6 +30,7 @@ import {
   FETCH_BY_SEARCH,
   COMMENT,
   FETCH_BY_CREATOR,
+  CLEAR,
 } from "./actionTypes";
 
 const PostContext = createContext(initialState);
@@ -31,10 +39,11 @@ const storage = getStorage(firebaseApp);
 
 export const PostProvider = ({ children }) => {
   const [state, dispatch] = useReducer(postReducer, initialState);
+  const [loading, setLoading] = useState(true);
 
   const createPost = async (post) => {
     const { title, message, tags, creatorId, imageFile } = post;
-    const imageLocation = `${creatorId}/${imageFile.name}`;
+    const imageLocation = `postImages/${creatorId}/${imageFile.name}`;
 
     const storageSpace = ref(storage, imageLocation);
 
@@ -42,18 +51,30 @@ export const PostProvider = ({ children }) => {
 
     const imageUrl = await getImageUrl(imageLocation);
 
-    await addDoc(collection(db, "posts"), {
+    const newPost = {
       title: title,
       message: message,
       tags: tags,
       creatorId: creatorId,
-      imageLocation: imageUrl,
+      imageUrl: imageUrl,
+      imageStorageLoc: imageLocation,
       createdAt: serverTimestamp(),
-    }).catch((error) => {
-      const errorCode = error.code;
-      const errorMessage = error.message;
-      console.log(errorCode, errorMessage);
-    });
+    };
+
+    await addDoc(collection(db, "posts"), {
+      ...newPost,
+    })
+      .then(
+        dispatch({
+          type: UPDATE,
+          payload: { ...newPost },
+        })
+      )
+      .catch((error) => {
+        const errorCode = error.code;
+        const errorMessage = error.message;
+        console.log(errorCode, errorMessage);
+      });
 
     await getPosts();
   };
@@ -85,33 +106,35 @@ export const PostProvider = ({ children }) => {
 
   const getPosts = async () => {
     const posts = [];
-    const querySnapshot = await getDocs(collection(db, "posts"));
+    const querySnapshot = await getDocs(collection(db, "posts")).catch(
+      (error) => {
+        const errorCode = error.code;
+        const errorMessage = error.message;
+        console.log(errorCode, errorMessage);
+      }
+    );
 
     querySnapshot.forEach((doc) => {
       posts.push({ ...doc.data(), id: doc.id });
     });
 
-    const changedPosts = await Promise.all(
-      posts.map(async (post) => {
-        return {
-          ...post,
-          imageLocation: await getImageUrl(post.imageLocation),
-        };
-      })
-    );
     dispatch({
       type: FETCH_ALL,
-      payload: [...changedPosts],
+      payload: [...posts],
     });
   };
 
   const getPost = async (id) => {
+    setLoading(true);
+    dispatch({ type: CLEAR });
     const docRef = doc(db, "posts", id);
     const docSnap = await getDoc(docRef);
     if (docSnap.exists()) {
       dispatch({ type: FETCH_POST, payload: docSnap.data() });
+      setLoading(false);
     } else {
       console.log("No such document!");
+      setLoading(false);
     }
   };
 
@@ -131,6 +154,8 @@ export const PostProvider = ({ children }) => {
     getPost,
     getImageUrl,
     createPost,
+    loading,
+    setLoading,
     posts: state.posts,
     post: state.post,
   };

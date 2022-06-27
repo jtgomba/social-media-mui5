@@ -8,11 +8,12 @@ import {
   FETCH_BY_SEARCH,
   COMMENT,
   FETCH_BY_CREATOR,
+  CLEAR,
 } from "./actionTypes";
 
 export const initialState = {
   posts: [],
-  post: { email: "" },
+  post: { title: "" },
 };
 const postReducer = (state, action) => {
   switch (action.type) {
@@ -51,6 +52,8 @@ const postReducer = (state, action) => {
           return post;
         }),
       };
+    case CLEAR:
+      return { ...state, post: { title: "" } };
     default:
       return state;
   }
