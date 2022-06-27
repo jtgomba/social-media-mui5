@@ -6,23 +6,16 @@ import {
   LIKE,
   CREATE,
   FETCH_BY_SEARCH,
-  START_LOADING,
-  END_LOADING,
   COMMENT,
   FETCH_BY_CREATOR,
 } from "./actionTypes";
 
 export const initialState = {
-  isLoading: true,
   posts: [],
   post: { email: "" },
 };
 const postReducer = (state, action) => {
   switch (action.type) {
-    case START_LOADING:
-      return { ...state, isLoading: true };
-    case END_LOADING:
-      return { ...state, isLoading: false };
     case FETCH_ALL:
       return {
         ...state,
