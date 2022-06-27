@@ -8,6 +8,7 @@ import {
   Stack,
 } from "@mui/material";
 import { createTheme } from "@mui/material/styles";
+import { useNavigate } from "react-router-dom";
 
 import useAuth from "../../context/AuthContext";
 import usePost from "../../context/PostContext";
@@ -15,6 +16,7 @@ import usePost from "../../context/PostContext";
 const theme = createTheme();
 
 const Form = () => {
+  const navigate = useNavigate();
   const { user } = useAuth();
   const { createPost } = usePost();
 
@@ -24,7 +26,7 @@ const Form = () => {
     tags: "",
     image: "",
     creatorId: user.uid,
-    imageFile: "",
+    imageFile: null,
   });
 
   const handleImage = (e) => {
@@ -37,12 +39,16 @@ const Form = () => {
 
   const handleSubmit = (e) => {
     e.preventDefault();
+    //check if user is logged in
     if (
       postData.title.length > 0 &&
       postData.message.length > 0 &&
-      postData.tags.length > 0
+      postData.tags.length > 0 &&
+      postData.imageFile
     ) {
       createPost(postData);
+      clear();
+      navigate("/", { replace: true });
     }
   };
 
@@ -52,6 +58,8 @@ const Form = () => {
       message: "",
       tags: "",
       image: "",
+      creatorId: user.uid,
+      imageFile: null,
     });
   }
 
@@ -62,8 +70,7 @@ const Form = () => {
           padding: theme.spacing(2),
           borderRadius: 1,
         }}
-        elevation={6}
-      >
+        elevation={6}>
         <Typography variant="h6" align="center">
           Please Sign In to create your own memories and like others memories.
         </Typography>
@@ -77,13 +84,11 @@ const Form = () => {
         padding: theme.spacing(2),
         borderRadius: 1,
       }}
-      elevation={6}
-    >
+      elevation={6}>
       <form autoComplete="off" noValidate onSubmit={handleSubmit}>
         <Stack
           spacing={2}
-          sx={{ alignItems: "center", justifyContent: "center" }}
-        >
+          sx={{ alignItems: "center", justifyContent: "center" }}>
           <Typography variant="h6">Creating a Memory</Typography>
           <TextField
             name="title"
@@ -125,7 +130,7 @@ const Form = () => {
               name="image"
               value={postData.image}
               onChange={handleImage}
-              accept="image/png, image/jpeg"
+              accept="image/png, image/jpeg, image/jpg"
             />
           </Box>
           <Button
@@ -133,8 +138,7 @@ const Form = () => {
             color="primary"
             size="large"
             type="submit"
-            fullWidth
-          >
+            fullWidth>
             Submit
           </Button>
           <Button
@@ -142,8 +146,7 @@ const Form = () => {
             color="secondary"
             size="small"
             fullWidth
-            onClick={clear}
-          >
+            onClick={clear}>
             Clear
           </Button>
         </Stack>

@@ -14,10 +14,10 @@ import userReducer, { initialState } from "./authReducer";
 import { AUTH, LOGOUT } from "./actionTypes";
 
 const AuthContext = createContext(initialState);
+const auth = getAuth(firebaseApp);
 
 export const AuthProvider = ({ children }) => {
   const [state, dispatch] = useReducer(userReducer, initialState);
-  const auth = getAuth(firebaseApp);
 
   const signup = (newUser) => {
     createUserWithEmailAndPassword(auth, newUser.email, newUser.password).catch(
@@ -61,12 +61,16 @@ export const AuthProvider = ({ children }) => {
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
-      dispatch({
-        type: AUTH,
-        payload: {
-          ...currentUser,
-        },
-      });
+      if (currentUser) {
+        dispatch({
+          type: AUTH,
+          payload: {
+            ...currentUser,
+          },
+        });
+      } else {
+        dispatch({ type: LOGOUT });
+      }
     });
     return () => {
       unsubscribe();

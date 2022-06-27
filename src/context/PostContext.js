@@ -4,6 +4,7 @@ import {
   collection,
   getDocs,
   getDoc,
+  setDoc,
   addDoc,
   doc,
   serverTimestamp,
@@ -25,11 +26,11 @@ import {
 } from "./actionTypes";
 
 const PostContext = createContext(initialState);
+const db = getFirestore(firebaseApp);
+const storage = getStorage(firebaseApp);
 
 export const PostProvider = ({ children }) => {
   const [state, dispatch] = useReducer(postReducer, initialState);
-  const db = getFirestore(firebaseApp);
-  const storage = getStorage(firebaseApp);
 
   const createPost = async (post) => {
     const { title, message, tags, creatorId, imageFile } = post;
@@ -37,21 +38,41 @@ export const PostProvider = ({ children }) => {
 
     const storageSpace = ref(storage, imageLocation);
 
-    uploadBytes(storageSpace, imageFile).then((snapshot) => {
-      console.log(snapshot);
-    });
+    await uploadBytes(storageSpace, imageFile);
+
+    const imageUrl = await getImageUrl(imageLocation);
 
     await addDoc(collection(db, "posts"), {
       title: title,
-      mssage: message,
+      message: message,
       tags: tags,
       creatorId: creatorId,
-      imageLocation: imageLocation,
+      imageLocation: imageUrl,
       createdAt: serverTimestamp(),
-    })
+    }).catch((error) => {
+      const errorCode = error.code;
+      const errorMessage = error.message;
+      console.log(errorCode, errorMessage);
+    });
+
+    await getPosts();
+  };
+
+  const updatePost = async (post) => {
+    const { title, message, tags, postId } = post;
+
+    await setDoc(
+      collection(db, "posts", postId),
+      {
+        title: title,
+        message: message,
+        tags: tags,
+      },
+      { merge: true }
+    )
       .then(
         dispatch({
-          type: CREATE,
+          type: UPDATE,
           payload: post,
         })
       )
@@ -88,10 +109,7 @@ export const PostProvider = ({ children }) => {
     const docRef = doc(db, "posts", id);
     const docSnap = await getDoc(docRef);
     if (docSnap.exists()) {
-      const oldPost = docSnap.data();
-      const newLocation = await getImageUrl(oldPost.imageLocation);
-      const newPost = { ...oldPost, imageLocation: newLocation };
-      dispatch({ type: FETCH_POST, payload: newPost });
+      dispatch({ type: FETCH_POST, payload: docSnap.data() });
     } else {
       console.log("No such document!");
     }

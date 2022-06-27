@@ -1,5 +1,5 @@
-import React from "react";
-import { Grid } from "@mui/material";
+import React, { useEffect } from "react";
+import { Grid, Box } from "@mui/material";
 
 import Post from "./Post/Post";
 import usePost from "../../context/PostContext";
@@ -8,31 +8,24 @@ import CircularProgress from "@mui/material/CircularProgress";
 const Posts = () => {
   const { getPosts, posts } = usePost();
 
-  if (!posts.length > 0) {
-    getPosts();
-  }
+  useEffect(() => {
+    /*     getPosts();
+     */
+  }, []);
 
   return (
     <Grid
-      sx={
-        posts.length !== 0
-          ? {
-              display: "flex",
-              alignItems: "center",
-            }
-          : {
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              height: "100%",
-            }
-      }
+      sx={{
+        display: "flex",
+        alignItems: "center",
+      }}
       container
       alignItems="stretch"
-      spacing={3}
-    >
+      spacing={3}>
       {posts.length === 0 ? (
-        <CircularProgress />
+        <Box sx={{ position: "absolute", top: "50vh", left: "50vw" }}>
+          <CircularProgress />
+        </Box>
       ) : (
         posts?.map((post, index) => (
           <Grid key={index} item xs={12} sm={12} md={6} lg={3}>
