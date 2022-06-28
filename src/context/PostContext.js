@@ -39,18 +39,22 @@ import {
   CLEAR,
 } from "./actionTypes";
 
+import useAuth from "./AuthContext";
+
 const PostContext = createContext(initialState);
 const db = getFirestore(firebaseApp);
 const storage = getStorage(firebaseApp);
 
 export const PostProvider = ({ children }) => {
+  const { user } = useAuth();
   const [state, dispatch] = useReducer(postReducer, initialState);
   const [loading, setLoading] = useState(true);
+  const [postToEdit, setPostToEdit] = useState({});
 
   const createPost = async (post) => {
     setLoading(true);
-    const { title, message, tags, creatorId, imageFile, author } = post;
-    const imageLocation = `postImages/${creatorId}/${imageFile.name}`;
+    const { title, message, tags, imageFile } = post;
+    const imageLocation = `postImages/${user.uid}/${imageFile.name}`;
 
     const storageSpace = ref(storage, imageLocation);
 
@@ -62,8 +66,8 @@ export const PostProvider = ({ children }) => {
       title: title,
       message: message,
       tags: tags,
-      author: author,
-      creatorId: creatorId,
+      author: user.displayName,
+      creatorId: user.uid,
       imageUrl: imageUrl,
       imageStorageLoc: imageLocation,
       createdAt: serverTimestamp(),
@@ -88,10 +92,11 @@ export const PostProvider = ({ children }) => {
   };
 
   const updatePost = async (post) => {
+    setLoading(true);
     const { title, message, tags, postId } = post;
 
     await setDoc(
-      collection(db, "posts", postId),
+      doc(db, "posts", postId),
       {
         title: title,
         message: message,
@@ -110,9 +115,9 @@ export const PostProvider = ({ children }) => {
         const errorMessage = error.message;
         console.log(errorCode, errorMessage);
       });
+    getPosts();
   };
 
-  //make sure to send storage bucket delete here too
   const deletePost = async (post) => {
     setLoading(true);
     const deleteRef = ref(storage, post.imageStorageLoc);
@@ -120,6 +125,7 @@ export const PostProvider = ({ children }) => {
     await deleteObject(deleteRef).catch((error) => {
       console.log(error);
     });
+    dispatch({ type: DELETE, payload: { _id: post.id } });
     getPosts();
   };
 
@@ -178,6 +184,9 @@ export const PostProvider = ({ children }) => {
     getImageUrl,
     createPost,
     deletePost,
+    postToEdit,
+    setPostToEdit,
+    updatePost,
     loading,
     setLoading,
     posts: state.posts,

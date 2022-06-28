@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   TextField,
   Button,
@@ -18,15 +18,15 @@ const theme = createTheme();
 const Form = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
-  const { createPost } = usePost();
+  const { createPost, postToEdit, updatePost } = usePost();
 
   const [postData, setPostData] = useState({
     title: "",
     message: "",
     tags: "",
     image: "",
-    creatorId: user.uid,
-    author: user.displayName,
+    creatorId: "",
+    author: "",
     imageFile: null,
   });
 
@@ -45,11 +45,15 @@ const Form = () => {
       postData.title.length > 0 &&
       postData.message.length > 0 &&
       postData.tags.length > 0 &&
-      postData.imageFile
+      postData.imageFile &&
+      !postData.creatorId
     ) {
       createPost(postData);
       clear();
-      navigate("/", { replace: true });
+      //navigate("/", { replace: true });
+    } else {
+      updatePost(postData);
+      clear();
     }
   };
 
@@ -59,10 +63,24 @@ const Form = () => {
       message: "",
       tags: "",
       image: "",
-      creatorId: user.uid,
+      creatorId: "",
       imageFile: null,
     });
   }
+
+  useEffect(() => {
+    if (postToEdit) {
+      setPostData((oldPost) => ({
+        ...oldPost,
+        creatorId: postToEdit.creatorId,
+        title: postToEdit.title,
+        message: postToEdit.message,
+        tags: postToEdit.tags,
+        author: postToEdit.author,
+        postId: postToEdit.id,
+      }));
+    }
+  }, [postToEdit]);
 
   if (!user.uid) {
     return (
@@ -71,8 +89,7 @@ const Form = () => {
           padding: theme.spacing(2),
           borderRadius: 1,
         }}
-        elevation={6}
-      >
+        elevation={6}>
         <Typography variant="h6" align="center">
           Please Sign In to create your own memories and like others memories.
         </Typography>
@@ -86,14 +103,14 @@ const Form = () => {
         padding: theme.spacing(2),
         borderRadius: 1,
       }}
-      elevation={6}
-    >
+      elevation={6}>
       <form autoComplete="off" noValidate onSubmit={handleSubmit}>
         <Stack
           spacing={2}
-          sx={{ alignItems: "center", justifyContent: "center" }}
-        >
-          <Typography variant="h6">Creating a Memory</Typography>
+          sx={{ alignItems: "center", justifyContent: "center" }}>
+          <Typography variant="h6">
+            {postData.creatorId ? "Editing" : "Creating"} a Memory
+          </Typography>
           <TextField
             name="title"
             variant="outlined"
@@ -142,8 +159,7 @@ const Form = () => {
             color="primary"
             size="large"
             type="submit"
-            fullWidth
-          >
+            fullWidth>
             Submit
           </Button>
           <Button
@@ -151,8 +167,7 @@ const Form = () => {
             color="secondary"
             size="small"
             fullWidth
-            onClick={clear}
-          >
+            onClick={clear}>
             Clear
           </Button>
         </Stack>

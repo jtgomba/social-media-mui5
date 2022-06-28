@@ -23,7 +23,7 @@ import usePost from "../../../context/PostContext";
 const Post = ({ post }) => {
   let navigate = useNavigate();
   const { user } = useAuth();
-  const { deletePost } = usePost();
+  const { deletePost, setPostToEdit } = usePost();
 
   const handleDelete = () => {
     deletePost(post);
@@ -41,8 +41,7 @@ const Post = ({ post }) => {
         position: "relative",
       }}
       raised
-      elevation={6}
-    >
+      elevation={6}>
       <Box
         sx={{
           position: "absolute",
@@ -50,10 +49,12 @@ const Post = ({ post }) => {
           right: "10px",
           color: "white",
           zIndex: "5",
-        }}
-      >
+        }}>
         {post.creatorId === user.uid ? (
-          <Button style={{ color: "white" }} size="small">
+          <Button
+            style={{ color: "white" }}
+            size="small"
+            onClick={() => setPostToEdit(post)}>
             <MoreHoriz fontSize="medium" />
           </Button>
         ) : (
@@ -66,8 +67,7 @@ const Post = ({ post }) => {
           display: "block",
           textAlign: "initial",
         }}
-        onClick={openPost}
-      >
+        onClick={openPost}>
         <CardMedia
           sx={{
             height: 0,
@@ -84,8 +84,7 @@ const Post = ({ post }) => {
             top: "20px",
             left: "20px",
             color: "white",
-          }}
-        >
+          }}>
           <Typography variant="h6">{post.author}</Typography>
           <Typography variant="body2">
             {new Date(post.createdAt?.seconds * 1000).toDateString()}
@@ -96,8 +95,7 @@ const Post = ({ post }) => {
             display: "flex",
             justifyContent: "space-between",
             margin: "20px",
-          }}
-        >
+          }}>
           <Typography variant="body2" color="textSecondary" component="h2">
             {post.tags.map((tag) => `#${tag} `)}
           </Typography>
@@ -106,8 +104,7 @@ const Post = ({ post }) => {
           sx={{ padding: "0 16px" }}
           gutterBottom
           variant="h5"
-          component="h2"
-        >
+          component="h2">
           {post.title}
         </Typography>
         <CardContent>
@@ -121,8 +118,7 @@ const Post = ({ post }) => {
           padding: "0 16px 8px 16px",
           display: "flex",
           justifyContent: "space-between",
-        }}
-      >
+        }}>
         <Button size="small" color="primary">
           {/* <Likes /> */}
         </Button>
