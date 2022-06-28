@@ -11,10 +11,22 @@ import {
   Pagination,
 } from "@mui/material";
 import { location } from "react-router-dom";
+import usePost from "../context/PostContext";
 
 import { Form, Posts } from "../components";
 
 const Home = () => {
+  const { searchPosts } = usePost();
+
+  const [tagSearch, setTagSearch] = useState("");
+
+  const handleTagSearch = () => {
+    if (tagSearch) {
+      const queryObject = { queryType: "tags", q: tagSearch };
+      searchPosts(queryObject);
+    }
+  };
+
   return (
     <Grow in>
       <Container maxWidth={false}>
@@ -44,11 +56,17 @@ const Home = () => {
               <TextField
                 name="search"
                 variant="outlined"
-                label="Search Memories"
+                label="Search Memories by Tags"
                 fullWidth
+                value={tagSearch}
+                onChange={(e) => setTagSearch(e.target.value.split(","))}
                 sx={{ marginBottom: "0.5rem" }}
               />
-              <Button variant="contained" color="primary">
+              <Button
+                variant="contained"
+                color="primary"
+                onClick={handleTagSearch}
+              >
                 Search
               </Button>
             </AppBar>
@@ -62,7 +80,7 @@ const Home = () => {
               }}
             >
               <Box sx={{ display: "flex", justifyContent: "center" }}>
-                <Pagination count={5} variant="outlined" />
+                <Pagination count={1} variant="outlined" />
               </Box>
             </Paper>
           </Grid>

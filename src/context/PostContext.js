@@ -15,6 +15,8 @@ import {
   doc,
   serverTimestamp,
   deleteDoc,
+  query,
+  where,
 } from "firebase/firestore";
 import {
   getStorage,
@@ -178,6 +180,53 @@ export const PostProvider = ({ children }) => {
     return response;
   };
 
+  const searchPosts = async (queryObject) => {
+    setLoading(true);
+
+    const { queryType, q } = queryObject;
+    const postsRef = collection(db, "posts");
+    const tagsSearch = query(postsRef, where("tags", "array-contains-any", q));
+    const singleTagSearch = query(
+      postsRef,
+      where("tags", "array-contains", "")
+    );
+    const authorSearch = query(postsRef, where("author", "==", q));
+
+    const posts = [];
+    let querySnapshot = "";
+
+    switch (queryType) {
+      case "author":
+        querySnapshot = await getDocs(authorSearch);
+        querySnapshot.forEach((doc) => {
+          posts.push(doc.data());
+        });
+        dispatch({ type: FETCH_BY_CREATOR, payload: posts });
+        break;
+      case "tags":
+        querySnapshot = await getDocs(tagsSearch);
+        querySnapshot.forEach((doc) => {
+          posts.push(doc.data());
+        });
+        dispatch({ type: FETCH_BY_SEARCH, payload: posts });
+        break;
+      case "tag":
+        querySnapshot = await getDocs(singleTagSearch);
+        querySnapshot.forEach((doc) => {
+          posts.push(doc.data());
+        });
+        dispatch({ type: FETCH_BY_SEARCH, payload: posts });
+        break;
+      default:
+        return "invalid query type";
+    }
+    setLoading(false);
+  };
+
+  const likePost = async (post) => {};
+
+  const commentOnPost = async (post) => {};
+
   const value = {
     getPosts,
     getPost,
@@ -186,6 +235,7 @@ export const PostProvider = ({ children }) => {
     deletePost,
     postToEdit,
     setPostToEdit,
+    searchPosts,
     updatePost,
     loading,
     setLoading,
