@@ -118,7 +118,6 @@ export const PostProvider = ({ children }) => {
     getPosts();
   };
 
-  //make sure to send storage bucket delete here too
   const deletePost = async (post) => {
     setLoading(true);
     const deleteRef = ref(storage, post.imageStorageLoc);
