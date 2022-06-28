@@ -1,10 +1,4 @@
-import {
-  createContext,
-  useReducer,
-  useContext,
-  useEffect,
-  useState,
-} from "react";
+import { createContext, useReducer, useContext, useState } from "react";
 import {
   getFirestore,
   collection,
@@ -17,6 +11,9 @@ import {
   deleteDoc,
   query,
   where,
+  orderBy,
+  limit,
+  startAfter,
 } from "firebase/firestore";
 import {
   getStorage,
@@ -33,10 +30,8 @@ import {
   FETCH_POST,
   UPDATE,
   DELETE,
-  LIKE,
   CREATE,
   FETCH_BY_SEARCH,
-  COMMENT,
   FETCH_BY_CREATOR,
   CLEAR,
 } from "./actionTypes";
@@ -52,6 +47,7 @@ export const PostProvider = ({ children }) => {
   const [state, dispatch] = useReducer(postReducer, initialState);
   const [loading, setLoading] = useState(true);
   const [postToEdit, setPostToEdit] = useState({});
+  const [lastVisible, setLastVisible] = useState();
 
   const createPost = async (post) => {
     setLoading(true);
@@ -131,28 +127,48 @@ export const PostProvider = ({ children }) => {
     getPosts();
   };
 
-  const getPosts = async () => {
+  const getPosts = async (start) => {
     setLoading(true);
 
     const posts = [];
-    const querySnapshot = await getDocs(collection(db, "posts")).catch(
-      (error) => {
-        setLoading(false);
-        const errorCode = error.code;
-        const errorMessage = error.message;
-        console.log(errorCode, errorMessage);
-      }
-    );
+    if (!start) {
+      const first = query(
+        collection(db, "posts"),
+        orderBy("createdAt", "desc"),
+        limit(100)
+      );
+      const documentSnapshots = await getDocs(first);
 
-    querySnapshot.forEach((doc) => {
-      posts.push({ ...doc.data(), id: doc.id });
-    });
+      documentSnapshots.forEach((doc) => {
+        posts.push({ ...doc.data(), id: doc.id });
+      });
+
+      setLastVisible(documentSnapshots.docs[documentSnapshots.docs.length - 1]);
+    } else {
+      const documentSnapshots = await getDocs(start);
+
+      documentSnapshots.forEach((doc) => {
+        posts.push({ ...doc.data(), id: doc.id });
+      });
+
+      setLastVisible(documentSnapshots.docs[documentSnapshots.docs.length - 1]);
+    }
 
     dispatch({
       type: FETCH_ALL,
       payload: [...posts],
     });
     setLoading(false);
+  };
+
+  const paginate = async () => {
+    const next = query(
+      collection(db, "posts"),
+      orderBy("createdAt", "desc"),
+      startAfter(lastVisible),
+      limit(8)
+    );
+    getPost(next);
   };
 
   const getPost = async (id) => {
@@ -181,39 +197,44 @@ export const PostProvider = ({ children }) => {
   };
 
   const searchPosts = async (queryObject) => {
+    console.log(queryObject);
     setLoading(true);
 
     const { queryType, q } = queryObject;
     const postsRef = collection(db, "posts");
-    const tagsSearch = query(postsRef, where("tags", "array-contains-any", q));
-    const singleTagSearch = query(
-      postsRef,
-      where("tags", "array-contains", "")
-    );
-    const authorSearch = query(postsRef, where("author", "==", q));
 
     const posts = [];
     let querySnapshot = "";
 
     switch (queryType) {
       case "author":
+        const authorSearch = query(postsRef, where("author", "==", q));
         querySnapshot = await getDocs(authorSearch);
         querySnapshot.forEach((doc) => {
-          posts.push(doc.data());
+          posts.push({ ...doc.data(), id: doc.id });
         });
         dispatch({ type: FETCH_BY_CREATOR, payload: posts });
         break;
       case "tags":
+        const tagsSearch = query(
+          postsRef,
+          where("tags", "array-contains-any", q)
+        );
         querySnapshot = await getDocs(tagsSearch);
         querySnapshot.forEach((doc) => {
-          posts.push(doc.data());
+          posts.push({ ...doc.data(), id: doc.id });
         });
         dispatch({ type: FETCH_BY_SEARCH, payload: posts });
         break;
-      case "tag":
+      case "oneTag":
+        const singleTagSearch = query(
+          postsRef,
+          where("tags", "array-contains", q)
+        );
+
         querySnapshot = await getDocs(singleTagSearch);
         querySnapshot.forEach((doc) => {
-          posts.push(doc.data());
+          posts.push({ ...doc.data(), id: doc.id });
         });
         dispatch({ type: FETCH_BY_SEARCH, payload: posts });
         break;
@@ -222,10 +243,6 @@ export const PostProvider = ({ children }) => {
     }
     setLoading(false);
   };
-
-  const likePost = async (post) => {};
-
-  const commentOnPost = async (post) => {};
 
   const value = {
     getPosts,
@@ -237,6 +254,7 @@ export const PostProvider = ({ children }) => {
     setPostToEdit,
     searchPosts,
     updatePost,
+    paginate,
     loading,
     setLoading,
     posts: state.posts,

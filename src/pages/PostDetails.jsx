@@ -1,17 +1,22 @@
 import React, { useEffect } from "react";
 import { Paper, Typography, Divider, Box, Stack } from "@mui/material";
-import { Link, useParams } from "react-router-dom";
+import { Link, useParams, useNavigate } from "react-router-dom";
 import CircularProgress from "@mui/material/CircularProgress";
 
 import usePost from "../context/PostContext";
 
 const PostDetails = () => {
+  let navigate = useNavigate();
   let { postId } = useParams();
-  const { getPost, post, loading } = usePost();
+  const { getPost, post, loading, searchPosts, posts } = usePost();
 
   useEffect(() => {
     getPost(postId);
-  }, []);
+    if (post.tags) {
+      const queryObject = { queryType: "tags", q: post.tags };
+      searchPosts(queryObject);
+    }
+  }, [postId]);
 
   if (!post.title.length > 0 && !loading) {
     return "No posts";
@@ -85,36 +90,46 @@ const PostDetails = () => {
           You might also like:
         </Typography>
         <Divider />
-        {/*         <Stack
+        <Stack
           direction={{ xs: "column", sm: "row" }}
           spacing={{ xs: 1, sm: 2, md: 4 }}
           sx={{
             mt: "15px",
           }}
         >
-          <Paper sx={{ cursor: "pointer", padding: "10px", maxWidth: "250px" }}>
-            <Stack>
-              <Typography gutterBottom variant="h6">
-                {post.title}
-              </Typography>
-              <Typography gutterBottom variant="subtitle2">
-                {post.autor}
-              </Typography>
-              <Typography gutterBottom variant="subtitle2">
-                {post.message}
-              </Typography>
-              <Typography gutterBottom variant="subtitle1">
-                Likes: 4
-              </Typography>
-              <img
-                src={post.image}
-                alt={post.title}
-                width="200px"
-                style={{ alignSelf: "center" }}
-              />
-            </Stack>
-          </Paper>
-        </Stack> */}
+          {posts &&
+            posts.map((onePost) => (
+              <Paper
+                sx={{ cursor: "pointer", padding: "10px", maxWidth: "250px" }}
+                key={onePost.id}
+                elevation={3}
+                onClick={() =>
+                  navigate(`/posts/${onePost.id}`, { replace: true })
+                }
+              >
+                <Stack>
+                  <Typography gutterBottom variant="h6">
+                    {onePost.title}
+                  </Typography>
+                  <Typography gutterBottom variant="subtitle2">
+                    {onePost.autor}
+                  </Typography>
+                  <Typography gutterBottom variant="subtitle2">
+                    {onePost.message}
+                  </Typography>
+                  <Typography gutterBottom variant="subtitle1">
+                    Likes: 4
+                  </Typography>
+                  <img
+                    src={onePost.imageUrl}
+                    alt={onePost.title}
+                    width="200px"
+                    style={{ alignSelf: "center" }}
+                  />
+                </Stack>
+              </Paper>
+            ))}
+        </Stack>
       </Box>
     </Paper>
   );
