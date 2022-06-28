@@ -197,7 +197,6 @@ export const PostProvider = ({ children }) => {
   };
 
   const searchPosts = async (queryObject) => {
-    console.log(queryObject);
     setLoading(true);
 
     const { queryType, q } = queryObject;
